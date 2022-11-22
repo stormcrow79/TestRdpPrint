@@ -3,29 +3,32 @@ program TestRdpPrint;
 {$APPTYPE CONSOLE}
 
 uses
-  SysUtils, Printers;
+  SysUtils,
+  Windows, WinSpool,
+  Classes,
+  Printers;
 
-// this VCL type is defined in Printers.pas
-type
-  TPrinterDevice = class
-    Driver, Device, Port: String;
-  end;
+function GetDefaultPrinter(pszBuffer: PChar; var pcchBuffer : DWORD) : bool; stdcall; external 'winspool.drv' name 'GetDefaultPrinterA';
 
 var
-  i: integer;
-  device: TPrinterDevice;
+  sDefault : array[0..255] of char;
+  iDefault : dword;
+  i : integer;
 
 begin
+  iDefault := 256;
+  FillChar(sDefault, iDefault, 0);
+  GetDefaultPrinter(@sDefault[0], iDefault);
+  writeln(sDefault);
+  writeln;
+
   try
     for i := 0 to Printer.Printers.Count - 1 do
     begin
-      device := TPrinterDevice(Printer.Printers.Objects[i]);
-      writeln(i, '. driver: ', device.driver);
-      write('   device: ', device.device);
+      write(i, '. ', Printer.Printers[i]);
       if i = Printer.PrinterIndex then
         write(' *');
       writeln;
-      writeln('   port: ', device.port);
     end;
   except
     on E:Exception do
